@@ -1,6 +1,6 @@
 # Todo API Project
 
-This project is a simple RESTful API for managing a todo list, built with Go and PostgreSQL.
+This project is a full-stack application for managing a todo list, built with Go and PostgreSQL for the backend, and React for the frontend.
 
 ## Table of Contents
 1. [Project Structure](#project-structure)
@@ -8,22 +8,29 @@ This project is a simple RESTful API for managing a todo list, built with Go and
 3. [Setup](#setup)
 4. [Running the Server](#running-the-server)
 5. [API Endpoints](#api-endpoints)
-6. [Testing the API](#testing-the-api)
-7. [Future Improvements](#future-improvements)
+6. [Frontend Application](#frontend-application)
+7. [Testing the API](#testing-the-api)
+8. [Future Improvements](#future-improvements)
 
 ## Project Structure
 
-The project consists of the following main files:
+The project consists of the following main components:
 
-- `main.go`: Contains the main server logic and API handlers
+Backend:
+- `main.go`: Contains the main server logic, API handlers, and CORS configuration
 - `db.go`: Handles database connection and initialization
 - `todo.go`: Defines the Todo struct and related functions
+
+Frontend:
+- `todo-frontend/`: React application directory
+- `todo-frontend/src/App.js`: Main React component for the Todo application
 
 ## Prerequisites
 
 Before you begin, ensure you have the following installed:
 - Go (1.16 or later)
 - PostgreSQL
+- Node.js and npm (for React frontend)
 - Git (optional, for version control)
 
 ## Setup
@@ -37,6 +44,7 @@ Before you begin, ensure you have the following installed:
 2. Install the required Go packages:
    ```
    go get github.com/lib/pq
+   go get github.com/rs/cors
    ```
 
 3. Set up the PostgreSQL database:
@@ -61,9 +69,15 @@ Before you begin, ensure you have the following installed:
      connStr := "user=your_username dbname=todo_db sslmode=disable"
      ```
 
+5. Set up the frontend:
+   ```
+   cd todo-frontend
+   npm install
+   ```
+
 ## Running the Server
 
-To run the server, use the following command in the project root directory:
+To run the backend server, use the following command in the project root directory:
 
 ```
 go run *.go
@@ -75,6 +89,15 @@ Successfully connected to database
 Server is running on port 8080
 ```
 
+To run the frontend development server:
+
+```
+cd todo-frontend
+npm start
+```
+
+The React application will be available at `http://localhost:3000`.
+
 ## API Endpoints
 
 The API provides the following endpoints:
@@ -83,6 +106,18 @@ The API provides the following endpoints:
 2. `POST /todos`: Create a new todo item
 3. `PUT /todos?id=<id>`: Update an existing todo item
 4. `DELETE /todos?id=<id>`: Delete a todo item
+
+## Frontend Application
+
+The frontend is a React application that provides a user interface for interacting with the Todo API. It includes the following features:
+
+- Display a list of todo items
+- Add new todo items
+- Mark todo items as complete/incomplete
+- Edit existing todo items
+- Delete todo items
+
+The main component (`App.js`) uses React hooks for state management and effect handling.
 
 ## Testing the API
 
@@ -110,6 +145,22 @@ You can use curl commands to test the API. Here are some examples:
 
 Note: When using zsh, make sure to wrap the URL in single quotes to prevent issues with the '?' character.
 
+## CORS Configuration
+
+The backend server is configured to handle Cross-Origin Resource Sharing (CORS), allowing the frontend application to make requests to the API. This is implemented using the `github.com/rs/cors` package in the `main.go` file:
+
+```go
+c := cors.New(cors.Options{
+    AllowedOrigins: []string{"http://localhost:3000"}, // React app's address
+    AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
+    AllowedHeaders: []string{"Content-Type"},
+})
+
+handler := c.Handler(mux)
+```
+
+This configuration allows requests from the React application running on `http://localhost:3000` and specifies the allowed HTTP methods and headers.
+
 ## Future Improvements
 
 Here are some potential improvements for the project:
@@ -120,7 +171,9 @@ Here are some potential improvements for the project:
 4. Add unit and integration tests
 5. Use environment variables for configuration
 6. Implement logging for better debugging and monitoring
-7. Create a frontend application to interact with the API
+7. Enhance the frontend with more advanced features (e.g., filtering, sorting)
 8. Dockerize the application for easier deployment
+9. Implement real-time updates using WebSockets
+10. Add offline support and data synchronization for the frontend
 
 Feel free to contribute to the project by implementing these improvements or suggesting new features!
