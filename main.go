@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -51,23 +52,48 @@ func createTodo(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateTodo(w http.ResponseWriter, r *http.Request) {
-	id, _ := strconv.Atoi(r.URL.Query().Get("id"))
-	var t Todo
-	err := json.NewDecoder(r.Body).Decode(&t)
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	var updateData map[string]interface{}
+	err = json.NewDecoder(r.Body).Decode(&updateData)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	_, err = db.Exec("UPDATE todos SET title = $1, completed = $2 WHERE id = $3", t.Title, t.Completed, id)
+	// 기존 todo 항목 가져오기
+	var todo Todo
+	err = db.QueryRow("SELECT id, title, completed, created_at FROM todos WHERE id = $1", id).Scan(&todo.ID, &todo.Title, &todo.Completed, &todo.CreatedAt)
+	if err == sql.ErrNoRows {
+		http.Error(w, "Todo not found", http.StatusNotFound)
+		return
+	} else if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// 제공된 필드만 업데이트
+	if title, ok := updateData["title"].(string); ok {
+		todo.Title = title
+	}
+	if completed, ok := updateData["completed"].(bool); ok {
+		todo.Completed = completed
+	}
+
+	// 데이터베이스 업데이트
+	_, err = db.Exec("UPDATE todos SET title = $1, completed = $2 WHERE id = $3", todo.Title, todo.Completed, id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	t.ID = id
+	// 업데이트된 todo 항목 반환
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(t)
+	json.NewEncoder(w).Encode(todo)
 }
 
 func deleteTodo(w http.ResponseWriter, r *http.Request) {

@@ -12,9 +12,17 @@ const TodoApp = () => {
   }, []);
 
   const fetchTodos = async () => {
-    const response = await fetch('http://localhost:8080/todos');
-    const data = await response.json();
-    setTodos(data);
+    try {
+      const response = await fetch('http://localhost:8080/todos');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setTodos(data || []); // 데이터가 없으면 빈 배열 설정
+    } catch (error) {
+      console.error("Could not fetch todos:", error);
+      setTodos([]); // 오류 발생 시 빈 배열 설정
+    }
   };
 
   const addTodo = async (e) => {
