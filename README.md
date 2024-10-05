@@ -32,7 +32,6 @@ Before you begin, ensure you have the following installed:
 - PostgreSQL
 - Node.js and npm (for React frontend)
 - Git (optional, for version control)
-
 ## Setup
 
 1. Clone the repository (if using Git):
@@ -41,39 +40,60 @@ Before you begin, ensure you have the following installed:
    cd todo-api
    ```
 
-2. Install the required Go packages:
+2. Install PostgreSQL (if not already installed):
+   For Ubuntu or Debian-based systems:
+   ```
+   sudo apt-get update
+   sudo apt-get install postgresql postgresql-contrib
+   ```
+   For other operating systems, please refer to the [official PostgreSQL documentation](https://www.postgresql.org/download/).
+
+3. Start PostgreSQL service:
+   ```
+   sudo systemctl start postgresql
+   sudo systemctl enable postgresql
+   ```
+
+4. Install the required Go packages:
    ```
    go get github.com/lib/pq
    go get github.com/rs/cors
    ```
 
-3. Set up the PostgreSQL database:
+5. Set up the PostgreSQL database:
    - Open a terminal and start the PostgreSQL command-line interface:
      ```
-     psql postgres
+     sudo -u postgres psql
      ```
    - Create a new database:
      ```sql
      CREATE DATABASE todo_db;
+     ```
+   - Create a new user and grant privileges (replace 'your_username' and 'your_password'):
+     ```sql
+     CREATE USER your_username WITH PASSWORD 'your_password';
+     GRANT ALL PRIVILEGES ON DATABASE todo_db TO your_username;
      ```
    - Exit the PostgreSQL CLI:
      ```
      \q
      ```
 
-4. Update the database connection string:
+6. Update the database connection string:
    - Open `db.go`
    - Locate the `initDB` function
-   - Update the `connStr` variable with your PostgreSQL username:
+   - Update the `connStr` variable with your PostgreSQL username and password:
      ```go
-     connStr := "user=your_username dbname=todo_db sslmode=disable"
+     connStr := "user=your_username password=your_password dbname=todo_db sslmode=disable"
      ```
 
-5. Set up the frontend:
+7. Set up the frontend:
    ```
    cd todo-frontend
    npm install
    ```
+
+After completing these steps, you should be ready to run the server and start using the application.
 
 ## Running the Server
 
